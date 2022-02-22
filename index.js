@@ -6,6 +6,10 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "./public")));
 
+const mustache = require('mustache-express');
+app.engine('mustache', mustache());
+app.set('view engine', 'mustache');
+
 const db = new nedb({ filename: "emp.db", autoload: true });
 console.log("db created");
 
@@ -28,15 +32,20 @@ app.post("/view", function (req, res) {
     if (err) {
       console.log("error");
     } else {
-      console.log("documents retrieved: ", docs);
+      // console.log("documents retrieved: ", docs);
+      //res.json(docs);
+
+      res.render('employeeData', {
+        'employee': docs
+      });
     }
   });
 });
 //UPDATE
 app.post("/update", function (req, res) {
   db.update(
-    { _id: req.body._id  },
-    { $set: { name: req.body.name  } },
+    { _id: req.body._id },
+    { $set: { name: req.body.name } },
     {},
     function (err, docs) {
       if (err) {
@@ -53,13 +62,18 @@ app.post("/showAll", function (req, res) {
     if (err) {
       console.log("error deleting document");
     } else {
-      console.log(docs);
+      //console.log(docs);
+      //res.json(docs);
+
+      res.render('employeeData', {
+        'employee': docs
+      });
     }
   });
 });
 //DELETE
 app.post("/delete", function (req, res) {
-  db.remove({ _id: req.body.id  }, {}, function (err, docsRem) {
+  db.remove({ _id: req.body.id }, {}, function (err, docsRem) {
     if (err) {
       console.log("error deleting document");
     } else {
@@ -68,6 +82,6 @@ app.post("/delete", function (req, res) {
   });
 });
 
-app.listen(3000,() =>{
+app.listen(3000, () => {
   console.log("Server listening on port: 3000");
 });
